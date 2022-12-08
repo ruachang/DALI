@@ -3,7 +3,7 @@ import nvidia.dali.fn as fn
 import nvidia.dali.ops as ops
 import nvidia.dali.types as types
 import numpy as np
-
+import os
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 
@@ -12,7 +12,7 @@ image_dir = "/home/developers/liuchang/FER数据集"
 batch_size = 8
 
 
-def show_images(image_batch):
+def show_images(batch_size, image_batch, name):
     columns = 4
     rows = (batch_size + 1) // (columns)
     fig = plt.figure(figsize = (32,(32 // columns) * rows))
@@ -22,7 +22,7 @@ def show_images(image_batch):
         plt.axis("off")
         plt.imshow(image_batch.at(j))
     plt.show()
-    plt.savefig("./try.png")
+    plt.savefig(os.path.join("result/image/" , name))
 
 
 class SimplePipeline(Pipeline):
@@ -51,5 +51,5 @@ print(pipe_out)
 # * 可视化
 images, labels = pipe_out
 # 由于image已经被放到GPU上, 所以无法直接显示
-show_images(images.as_cpu())
+show_images(batch_size, images.as_cpu(), "simple_example.png")
 
