@@ -31,9 +31,9 @@ class SimplePipeline(Pipeline):
         # self.input = ops.FileReader(file_root = image_dir, random_shuffle=True, initial_fill=16)
         # instead of path to file directory file with pairs image_name image_label_value can be provided
         # * 读取
-        self.input = ops.FileReader(file_root = image_dir, file_list = txt_path)
+        self.input = ops.readers.File(file_root = image_dir, file_list = txt_path)
         # * 解码
-        self.decode = ops.ImageDecoder(device = 'mixed', output_type = types.RGB)
+        self.decode = ops.decoders.Image(device = 'mixed', output_type = types.RGB)
         # * 随机裁剪(预处理)
         self.resizedCrop = ops.RandomResizedCrop(device="gpu", size=224, random_area=[0.08, 1.25])
     # * 设定Pipeline的执行顺序
