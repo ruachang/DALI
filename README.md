@@ -119,3 +119,48 @@ gpu
 ![shard示意](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/_images/sharding.png)
 
 所以若要使用多个GPU直接在定义class的时候把两个参数加进去, 在使用`fn.readers.file`的时候直接通过定义不同的`shard_id`来区别不同的Pipeline, 每个不同的`shard_id`都要对应一个新的Pipeline
+
+## 图像处理
+
+DALI库中内置了很多用来做各种预处理的函数, 在前推的时候加上就可以, 直接查会比较快, [预处理示例的链接](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/examples/image_processing/augmentation_gallery.html)
+
+几个比较典型的应用有
+
+### 数据增强
+
+包含在`fn.decoders`或者`ops.decoders`, 主要包括的操作是对图像进行裁剪
+### 上下采样
+
+包含在`fn.resize`或者`ops.Resize`里, 可以设定的参量为
+* 插值方法和是否需要抗混叠(`ops`不支持), 
+包含的参数包括[参数指引](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/examples/image_processing/interp_types.html#Downscaling)
+  * 上采样(放大)
+```Python
+for interp in [
+            dali.types.INTERP_LINEAR,
+            dali.types.INTERP_CUBIC,
+            dali.types.INTERP_GAUSSIAN,
+            dali.types.INTERP_LANCZOS3,
+            dali.types.INTERP_NN,
+        ]
+```
+  * 下采样(缩小)
+```Python
+for interp, antialias in [
+            (dali.types.INTERP_LINEAR, False),
+            (dali.types.INTERP_LINEAR, True),
+            (dali.types.INTERP_CUBIC, False),
+            (dali.types.INTERP_CUBIC, True),
+            (dali.types.INTERP_GAUSSIAN, False),
+            (dali.types.INTERP_GAUSSIAN, True),
+            (dali.types.INTERP_LANCZOS3, False),
+            (dali.types.INTERP_LANCZOS3, True),
+            (dali.types.INTERP_NN, False),
+        ]
+```
+
+* 放缩的模式, 是否保持原始图像的比例
+* 是否特别对某个部分进行放缩, 设置`roi_start`和`roi_end`
+  * 如果要对图像进行翻转, 可以通过把`roi_start`比`roi_end`来实现
+
+几个实现的示例在[预处理示例](process.py)
