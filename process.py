@@ -7,6 +7,7 @@ import os
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
+from torch import device
 
 txt_path = "/home/developers/liuchang/FER数据集/Oulu-CASIA/NI200cropped/10_fold_txt/0_10_fold_train.txt".format(10)
 image_dir = "/home/developers/liuchang/FER数据集"
@@ -21,7 +22,7 @@ def show_images(batch_size, image_batch, name):
     for j in range(rows*columns):
         plt.subplot(gs[j])
         plt.axis("off")
-        plt.imshow(image_batch.at(j))
+        plt.imshow(image_batch.at(j)[0,...].squeeze(), cmap="gray")
     plt.show()
     plt.savefig(os.path.join("result/image/" , name))
 
@@ -41,7 +42,9 @@ class ProcessPipeline(Pipeline):
         if preprocess == "crop":
             self.preprocessor = ops.RandomResizedCrop(device="gpu", size = (60, 60), random_area=[0.5, 1.0])
         if preprocess == "flop":
-            self.preprocessor = ops.random.CoinFlip(device="gpu", probability=0.5)
+            self.mirror = ops.random.CoinFlip(device="gpu", probability=0.5)
+            mirror = fn.random.coin_flip(device="cpu", probability=0.5)
+            self.preprocessor = ops.CropMirrorNormalize(scale = 0.3, device="gpu", mirror=mirror)
     # * 设定Pipeline的执行顺序
     def define_graph(self):
         jpegs, labels = self.input()
@@ -49,16 +52,16 @@ class ProcessPipeline(Pipeline):
         images = self.preprocessor(images)
         return (images, labels)
 # * 初始化Pipeline类
-preprocess = "resize"
-pipe = ProcessPipeline(batch_size, 1, 0, preprocess)
-pipe.build()
-# * 从pipe中读取一个batch
-pipe_out = pipe.run()
-print(pipe_out)
-# * 可视化
-images, labels = pipe_out
-# 由于image已经被放到GPU上, 所以无法直接显示
-show_images(batch_size, images.as_cpu(), preprocess + ".png")
+# preprocess = "resize"
+# pipe = ProcessPipeline(batch_size, 1, 0, preprocess)
+# pipe.build()
+# # * 从pipe中读取一个batch
+# pipe_out = pipe.run()
+# print(pipe_out)
+# # * 可视化
+# images, labels = pipe_out
+# # 由于image已经被放到GPU上, 所以无法直接显示
+# show_images(batch_size, images.as_cpu(), preprocess + ".png")
 
 preprocess = "crop"
 pipe = ProcessPipeline(batch_size, 1, 0, preprocess)
