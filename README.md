@@ -179,3 +179,14 @@ for interp, antialias in [
 * 输定输出
 
 ### PyTorch Tensors
+
+在PyTorch中最常用的使用DALI的场景是将其作为数据的加载器, 代替原本的Dataloader, 理论上可以加快数据处理和搬运的速度, 只要在定义好的修饰器, build之后引入到`DALIGenericIterator`中即可, 这个类相当于`DataLoader`
+
+如果有多卡, 或者多个线程可以把他们发送到多个pipe上, 建立起来的DataLoader读进来的是所有pipe的结果, 所以之后一次迭代读入的数据的格式为`pipe_num, batch_num, CHW`
+
+```Python
+from nvidia.dali.plugin.pytorch import DALIGenericIterator
+
+pipes = [caffe_pipeline(batch_size=BATCH_SIZE, num_threads=2, device_id=device_id, num_gpus=N) for device_id in range(N)]
+train_loader = DALIGenericIterator(pipes, ["data", "label", reader_name = "Reader"])
+```
