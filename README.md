@@ -164,3 +164,18 @@ for interp, antialias in [
   * 如果要对图像进行翻转, 可以通过把`roi_start`比`roi_end`来实现
 
 几个实现的示例在[预处理示例](process.py)
+
+## 实际使用DALI处理过的数据
+
+如果要在定义的Pipeline中执行除了Pipeline定义范围内的操作, 需要对函数做额外的定义, 使其可以运行在Pipeline中. 这样的函数可以分为常规的Python的函数和基于各种深度学习方法的函数, 它们之间主要的差别是面向的输入的数据类型不同
+
+### 常规的Python函数
+
+定义的过程可以分为
+
+* 定义一个`Pipeline`类, 并且把它的`exec_async`和`exec_pipelined`参数全部设置为`False`
+* 对图片进行预处理(使用DALI自己的方法)
+* 使用`fn.python_function(<input>, function=<defined_function name>, num_outputs)`引入外部函数
+* 输定输出
+
+### PyTorch Tensors
